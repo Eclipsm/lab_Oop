@@ -1,0 +1,140 @@
+public class ProductV2 {
+
+    // ===== S3 : static =====
+    private static double vatRate = 0.0;
+    private static double globalDiscount = 0.0;
+    private static int productCount = 0;
+
+    // ===== S1 : instance =====
+    private String code;
+    private String name;
+    private double price;
+    private int stock;
+    private double productDiscount; // %
+
+    // ===== S2 : constructor =====
+    public ProductV2() {
+        this("N/A", "Unknown", 0.0, 0);
+    }
+
+    public ProductV2(String code, String name, double price, int stock) {
+        this.code = code;
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.productDiscount = 0.0;
+        productCount++;
+    }
+
+    // ===== Getter / Setter =====
+    public int getStock() {
+        return stock;
+    }
+
+    public boolean setProductDiscount(double percent) {
+        if (percent < 0 || percent > 50) {
+            return false;
+        }
+        this.productDiscount = percent / 100.0;
+        return true;
+    }
+
+    // ===== Business Logic =====
+    public boolean reduceStock(int qty) {
+        if (qty <= 0 || qty > stock) {
+            return false;
+        }
+        stock -= qty;
+        return true;
+    }
+
+    public double priceBeforeDiscount(int qty) {
+        return price * qty;
+    }
+
+    public double priceAfterDiscount(int qty) {
+        double totalDiscount = productDiscount + globalDiscount;
+        return priceBeforeDiscount(qty) * (1 - totalDiscount);
+    }
+
+    public double priceAfterDiscountWithTax(int qty) {
+        return priceAfterDiscount(qty) * (1 + vatRate);
+    }
+
+    // ===== Static methods =====
+    public static void setVatRate(double percent) {
+        vatRate = percent / 100.0;
+    }
+
+    public static boolean setGlobalDiscount(double percent) {
+        if (percent < 0 || percent > 25) {
+            return false;
+        }
+        globalDiscount = percent / 100.0;
+        return true;
+    }
+
+    public static int getProductCount() {
+        return productCount;
+    }
+
+    // ===== toString =====
+    @Override
+    public String toString() {
+        return "Product[" + code + ", " + name +
+                ", price=" + price +
+                ", stock=" + stock + "]";
+    }
+}
+
+
+
+
+public class POSAppV2 {
+
+    public static void main(String[] args) {
+
+        // 1. VAT 7%
+        ProductV2.setVatRate(7);
+
+        // 2. Create products
+        ProductV2 p1 = new ProductV2("D001", "Coke", 18.0, 40);
+        ProductV2 p2 = new ProductV2("E001", "Banana", 9.0, 20);
+        ProductV2 p3 = new ProductV2("F001", "Potato", 25.0, 15);
+
+        // 3. Product discount
+        p1.setProductDiscount(15); // 15%
+        p2.setProductDiscount(10); // 10%
+
+        // 4. Global discount
+        ProductV2.setGlobalDiscount(10); // 10%
+
+        System.out.println("[Debug]: Total products created: "
+                + ProductV2.getProductCount());
+
+        int qty = 5;
+
+        // 5. Sell product with discount
+        if (p1.reduceStock(qty)) {
+            System.out.println("[INFO]: " + p1);
+            System.out.println("Price before discount = "
+                    + p1.priceBeforeDiscount(qty));
+            System.out.println("Price after discount = "
+                    + p1.priceAfterDiscount(qty));
+            System.out.println("Final price (discount + VAT) = "
+                    + p1.priceAfterDiscountWithTax(qty));
+        }
+
+        // 6. Change VAT & sell again
+        ProductV2.setVatRate(10);
+
+        p2.reduceStock(3);
+        p3.reduceStock(2);
+
+        System.out.println("Updated products:");
+        System.out.println(p1);
+        System.out.println(p2);
+        System.out.println(p3);
+    }
+}
+
