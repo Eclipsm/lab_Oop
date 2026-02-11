@@ -1,1 +1,363 @@
+// File: <NAME OF FILE>
+// Description: <A DESCRIPTION OF YOUR PROGRAM>
+// Assignment Number: <e.g., 1 – 13>
+//
+// ID: <YOUR STUDENT ID>
+// Name: <YOUR FULLNAME>
+// Section: <YOUR SECTION e.g., 1, 2, or 3>
+// Grader: <YOUR GRADER’S NAME>
+//
+// On my honor, <YOUR FULLNAME>, this lab assignment is my own work
+// and I have not provided this code to any other students.
+
+import java.util.*;
+
+public class Competitor {
+	
+	private String fname, lname, nationality;
+	private int age;
+	private List<Score> score;
+	private double w1, w2;
+	private final int maxKpoint = 50;
+	
+	public Competitor(double w1, double w2) {
+		fname = lname = nationality = "";
+		age = 0;
+		score = new ArrayList<>();
+		this.w1 = w1;  this.w2 = w2;
+	}
+	
+	//Set all attributes to the given parameters.
+	public void setProfile(String fname, String lname, String nationality, int age)
+	{
+		//TODO: Code HERE
+		this.fname = fname;
+		this.lname = lname;
+		this.nationality = nationality;
+		this.age = age;
+	}
+	
+	// Add jScore and sScore to the list of score
+	// The first score will represent the round1 score for the competitor
+	public void setScore(double jScore, double[] sScore) {
+		//TODO: Code HERE
+		Score s = new Score();
+		s.setScores(jScore);
+		s.setScores(sScore);
+		score.add(s);
+	}
+	
+	public void showProfile() {
+		System.out.print("Name: "+this.fname+" "+this.lname+", Age:"+this.age+", Nationality:"+this.nationality);
+	}
+	
+	// Display all raw score both (1) jump length and (2) Aerial Style from the given input round
+	// [be careful] The input round must start from 1 not 0.
+	// The format is present in Lab06 sheet
+	public void showRawScore(int round) {
+		//TODO: Code HERE
+		Score s = score.get(round - 1);
+
+		System.out.format("Jumpping score: %.1f", getJScore(round));
+		System.out.println();
+
+		System.out.print("Ariel Style (Raw) score: |");
+
+		double[] raw = s.getStyleScore();
+		for(int i = 0; i < raw.length; i++){
+			System.out.print(raw[i] + "|");
+		}
+	}
+	
+	
+   /*
+    * Return the Jump Score (JScore) for the given round
+	*  JScore = (jump length/maxKpoint)*10
+    */
+	public double getJScore(int round) {
+		Score s = score.get(round - 1);
+		double jumpLength = s.getJumpScores();
+		return (jumpLength / maxKpoint) * 10;
+	}
+	
+   /*
+    * Return the final score (FScore) for the given round
+    * jScpre comes from getJSCore (Score.java)
+    * sScore comes from getCalibratedAverage (Score.java)
+    * FScore = jScore*w1 + sScore*w2
+    */
+	public double getFinalScore(int round) {
+		//TODO: Code HERE
+		Score s = score.get(round - 1);
+		double jScore = getJScore(round);
+		double sScore = s.getCalibratedAverage();
+		return (jScore * w1) + (sScore * w2);
+	}
+	
+	//This main is for testing your output
+	public static void main(String[] args) {
+		Competitor c1 = new Competitor(0.5, 0.5);
+		Competitor c2 = new Competitor(0.2, 0.8);
+		
+		c1.setProfile("Somechai", "Jaidee", "Thai", 33);
+		c2.setProfile("Brain", "Toss", "British", 35);
+		
+		System.out.println("===============================");
+		//Competitor 1
+		c1.setScore(45, new double[]{8.0,8.5,9.0,7.5,6.7,8.0});  //Round1
+		c1.setScore(49, new double[]{10.0,8.5,9.0,7.5,6.7,8.0}); //Round2
+		
+		c1.showProfile();
+		System.out.println("\n[Round1]");
+		c1.showRawScore(1);
+		System.out.format("\nFinal score: %.2f",c1.getFinalScore(1));
+		
+		System.out.println("\n[Round2]");
+		c1.showRawScore(2);
+		System.out.format("\nFinal score: %.2f",c1.getFinalScore(2));
+		
+		System.out.println("\n===============================");
+		
+		//Competitor 2
+		c2.setScore(37, new double[]{9.0,9.5,9.0,7.5,8.7,8.0});  //Round1
+		c2.setScore(48, new double[]{9.3,8.5,9.5,8.5,7.7,8.0}); //Round2
+		
+		c2.showProfile();
+		System.out.println("\n[Round1]");
+		c2.showRawScore(1);
+		System.out.format("\nFinal score: %.2f",c2.getFinalScore(1));
+		
+		System.out.println("\n[Round2]");
+		c2.showRawScore(2);
+		System.out.format("\nFinal score: %.2f",c2.getFinalScore(2));
+		
+			
+	}
+	
+	
+}
+
+
+/*
+* This class stores scores and provide calibrated average about the scores from 6 judges. 
+* This class will be used as a part of the Competitor class. 
+*/
+import java.util.Arrays;
+import java.util.List;
+
+public class Score {
+	private double jumpScore;
+	private double[] styleScore; 
+	
+	//The constructor should set all given attributes to 0.
+	public Score() {
+		//TODO: Code HERE
+		this.jumpScore = 0.0;
+		this.styleScore = new double[6];
+		for(int i = 0; i < 6; i++){
+			this.styleScore[i] = 0.0;
+		}
+	}
+	
+	//This method set the jumpScore to the given score
+	public void setScores(double score) {
+		//TODO: Code HERE
+		this.jumpScore = score;
+	}
+	
+	//This method set the styleScore to the given score
+	public void setScores(double[] scores) {
+		//TODO: Code HERE
+		this.styleScore = new double[scores.length];
+		for(int i = 0; i < scores.length; i++){
+			this.styleScore[i] = scores[i];
+		}
+	}
+	
+	//This method return the jumpScore
+	public double getJumpScores() {
+		//TODO: Code HERE
+		return this.jumpScore;
+		
+	}
+	
+	//This method return the styleScore
+	public double[] getStyleScore() {
+		//TODO: Code HERE
+		return this.styleScore;
+	
+	}
+	
+   /*
+    * Return the average of the scores after excluding the minimum and maximum
+    * value. In short, it should return 
+    *   (SUM(this.scores) - MIN(this.scores) - MAX(this.scores))/(n-2), where
+    * n is the length of the score list. 
+    */
+	public double getCalibratedAverage() {
+		
+		//TODO: Code HERE
+		double min = styleScore[0];
+		double max = styleScore[0];
+		double sum = 0;
+
+		for(int i = 0; i < styleScore.length; i++){
+			if(styleScore[i] < min){
+				min = styleScore[i];
+			}
+			if(styleScore[i] > max){
+				max = styleScore[i];
+			}
+			sum += styleScore[i];
+		}
+
+		return (sum - min - max) / (styleScore.length - 2);
+		
+		
+	}
+	
+	//This main is for testing your output
+	public static void main(String[] args) {
+		Score s1 = new Score();
+		s1.setScores(9.5);
+		s1.setScores(new double[] {5.5, 4.5, 3.5, 2.5, 1.5, 6.5});
+		System.out.println(s1.getJumpScores());
+		System.out.println(Arrays.toString(s1.getStyleScore()));
+		System.out.println(s1.getCalibratedAverage());
+	}
+}
+
+
+// File: <NAME OF FILE>
+// Description: <A DESCRIPTION OF YOUR PROGRAM>
+// Assignment Number: <e.g., 1 – 13>
+//
+// ID: <YOUR STUDENT ID>
+// Name: <YOUR FULLNAME>
+// Section: <YOUR SECTION e.g., 1, 2, or 3>
+// Grader: <YOUR GRADER’S NAME>
+//
+// On my honor, <YOUR FULLNAME>, this lab assignment is my own work
+// and I have not provided this code to any other students.
+
+import java.util.*;
+
+public class SkiCompetition {
+	
+	private List<Competitor> competitors = new ArrayList<>();
+	private double w1;
+	private double w2;
+	
+	public SkiCompetition(double w1, double w2) {
+		this.w1 = w1;
+		this.w2 = w2;
+	}
+	
+	public SkiCompetition() {
+		this(0.5,0.5);
+	}
+	
+   /*
+    * Return the List of top 3 highest (final) score competitors for the given round
+    * [Be careful] To get gold medal, you have to be in top 3 and also has a final score above 8.0   
+    */
+	public List<Competitor> getGoldMedal(List<Competitor> competitors, int round){
+		//TODO: Code HERE
+		List<Competitor> result = new ArrayList<>();
+		List<Competitor> temp = new ArrayList<>();
+
+		for(Competitor c : competitors){
+			if(c.getFinalScore(round) >= 8.0){
+				temp.add(c);
+			}
+		}
+
+		for(int k = 0; k < 3 && temp.size() > 0; k++){
+
+			double max = -1;
+			int index = -1;
+
+			for(int i = 0; i < temp.size(); i++){
+				double score = temp.get(i).getFinalScore(round);
+
+				if(score > max){
+					max = score;
+					index = i;
+				}
+			}
+
+			if(index != -1){
+				result.add(temp.get(index));
+				temp.remove(index);
+			}
+		}
+
+        return result;
+        
+	}
+	
+    public void addCompetitor(Competitor c) {
+    	if(!competitors.contains(c))
+    		competitors.add(c);
+    }
+	
+	
+	public static void main(String[] args) {
+		SkiCompetition season1 = new SkiCompetition();
+		season1.addCompetitor(new Competitor(0.5,0.5));
+		season1.addCompetitor(new Competitor(0.5,0.5));
+		season1.addCompetitor(new Competitor(0.5,0.5));
+		season1.addCompetitor(new Competitor(0.5,0.5));
+		
+		season1.competitors.get(0).setProfile("Brian", "Xavia", "American", 33);
+		season1.competitors.get(0).setScore(45.0, new double[]{7.0,8.5,9.0,9.5,9.7,8.5}); //Round 1
+		season1.competitors.get(0).setScore(18.0, new double[]{8.0,8.5,9.0,7.5,6.7,8.0}); //Round 2
+		
+		season1.competitors.get(1).setProfile("Albert", "Wattana", "French", 44);
+		season1.competitors.get(1).setScore(46.5, new double[]{7.0,7.5,7.0,7.5,7.5,7.0}); //Round1
+		season1.competitors.get(1).setScore(17.0, new double[]{8.0,8.5,9.0,9.5,9.5,10.0});//Round2
+		
+		season1.competitors.get(2).setProfile("Maja", "Luvinia", "Polish", 34);
+		season1.competitors.get(2).setScore(45.3, new double[]{10.0,5.5,10.0,9.5,8.5,10.0}); //Round1
+		season1.competitors.get(2).setScore(16.9, new double[]{9.0,9.5,9.0,8.5,10,9.5});	 //Round2
+		
+		season1.competitors.get(3).setProfile("Joby", "Beckett", "Australia", 21);
+		season1.competitors.get(3).setScore(47.1, new double[]{6.0,8.0,9.5,8.5,9.5,8.5});	//Round1
+		season1.competitors.get(3).setScore(37.8, new double[]{10.0,8.5,8.3,8.2,6.7,9.3});	//Round2
+		
+		System.out.println("[Round1]");
+		System.out.println("== Scores Board ==");
+		for(Competitor e : season1.competitors) {
+			e.showProfile();
+			System.out.format(" | Final Score: %.2f", e.getFinalScore(1));
+			System.out.println("\n-----------------");
+		}
+		
+		
+		System.out.println("\n== List of Gold Medal ==");
+		for(Competitor e : season1.getGoldMedal(season1.competitors, 1)){
+			e.showProfile();
+			System.out.format(" | Final Score: %.2f", e.getFinalScore(1));
+			System.out.println("\n-----------------");
+		}
+		
+		System.out.println("\n=================================");
+		System.out.println("[Round2]");
+		System.out.println("== Scores Board ==");
+		for(Competitor e : season1.competitors) {
+			e.showProfile();
+			System.out.format(" | Final Score: %.2f", e.getFinalScore(2));
+			System.out.println("\n-----------------");
+		}
+		
+		
+		System.out.println("\n== List of Gold Medal ==");
+		for(Competitor e : season1.getGoldMedal(season1.competitors, 2)){
+			e.showProfile();
+			System.out.format(" | Final Score: %.2f", e.getFinalScore(2));
+			System.out.println("\n-----------------");
+		}
+	}
+
+}
 
